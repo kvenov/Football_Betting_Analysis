@@ -20,4 +20,5 @@ UNDERSTAT_DATA_PATH = f"{RAW_DATA_PATH}/understat_data/"
 UNDERSTAT_BASE_URL = "https://understat.com/league"
 
 # Football-Data.co.uk
-FOOTBALL_DATA_BASE_URL = "https://www.football-data.co.uk/mmz4281"
+FOOTBALL_DATA_PATH = f"{RAW_DATA_PATH}/football_data_co_uk/"
+FOOTBALL_DATA_BASE_URL = "https://www.football-data.co.uk/mmz4281/{season}/{league}.csv"

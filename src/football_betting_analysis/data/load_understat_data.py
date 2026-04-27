@@ -16,6 +16,11 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # The undestat client from which the api requests are made
 client = understatapi.UnderstatClient()
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+)
+
 logger = logging.getLogger(__name__)
 
 def safe_call(
