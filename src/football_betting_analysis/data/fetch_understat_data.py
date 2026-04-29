@@ -16,11 +16,6 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # The undestat client from which the api requests are made
 client = understatapi.UnderstatClient()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-)
-
 logger = logging.getLogger(__name__)
 
 def safe_call(
@@ -327,7 +322,7 @@ def load_shot_data(matches_df: pd.DataFrame) -> None:
         logger.info('All matches shots have been loaded successfully!')
 
 
-def run_pipeline():
+def fetch_understat_data():
     matches_df = load_match_data(LEAGUE, SEASONS)
     
     load_player_data(LEAGUE, SEASONS)
@@ -335,7 +330,3 @@ def run_pipeline():
     load_shot_data(matches_df)
 
     print("ALL DATA COLLECTED SUCCESSFULLY")
-
-
-if __name__ == "__main__":
-    run_pipeline()

@@ -21,11 +21,6 @@ MAX_WORKERS = 5
 RETRIES = 3
 BASE_DELAY = 1.0
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-)
-
 logger = logging.getLogger(__name__)
 
 def fetch_csv_with_retry(url: str) -> pd.DataFrame:
@@ -216,11 +211,7 @@ def load_football_data(league_code: str, seasons: list) -> None:
     logger.info(f"Failed seasons: {len(failed)}")
     
 
-def run_pipeline():
+def fetch_football_data():
     load_football_data(LEAGUE_CODE_FD, SEASONS)
 
     print("ALL DATA COLLECTED SUCCESSFULLY")
-
-
-if __name__ == "__main__":
-    run_pipeline()
