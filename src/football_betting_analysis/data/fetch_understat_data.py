@@ -168,8 +168,13 @@ def fetch_team_context(team_name: str, season: int):
         logger.error(f'Failed: {team_name} ({season})')
         return None
 
+    # Removing all of the formation type data, because it is varying amoung the teams, and it causes problems with the structure of the data!
+    # The choice is made on my own responsibility that this data is not too important and influential enough for the predictive models, and it is acceptable at this moment to not be fetched! 
+    data.pop("formation", None)
+
     data["team_name"] = team_name
     data["season"] = f"{season}/{season+1}"
+    
     return data
 
 def load_team_data(league: str, seasons: list) -> None:
