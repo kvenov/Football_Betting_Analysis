@@ -12,12 +12,13 @@ SEASONS = list(range(START_SEASON, END_SEASON))
 
 # Data paths
 RAW_DATA_PATH = "data/raw/"
-INTERIM_DATA_PATH = "data/interim"
+INTERIM_DATA_PATH = "data/interim/"
 PROCESSED_DATA_PATH = "data/processed/"
 
 # Understat
 UNDERSTAT_DATA_PATH = f"{RAW_DATA_PATH}/understat_data/"
 UNDERSTAT_BASE_URL = "https://understat.com/league"
+UNDERSTAT_INTERIM_PATH = f"{INTERIM_DATA_PATH}/understat_data/"
 
 # Football-Data.co.uk
 FOOTBALL_DATA_PATH = f"{RAW_DATA_PATH}/football_data_co_uk/"
