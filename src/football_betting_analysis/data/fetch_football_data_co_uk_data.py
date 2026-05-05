@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 import os
 import time
@@ -22,6 +23,35 @@ RETRIES = 3
 BASE_DELAY = 1.0
 
 logger = logging.getLogger(__name__)
+
+# This is the data schema that the data will based to, and the schema is defined, 
+# because the datasets are inconsistent and dont provide the data in the same way with the same features!
+EXPECTED_COLUMNS = [
+    "Div", "Date", "Time", "HomeTeam", "AwayTeam",
+    "FTHG", "FTAG", "FTR",
+    "HTHG", "HTAG", "HTR",
+    "Attendance", "Referee",
+    "HS", "AS", "HST", "AST",
+    "HHW", "AHW",
+    "HC", "AC",
+    "HF", "AF",
+    "HFKC", "AFKC",
+    "HO", "AO",
+    "HY", "AY",
+    "HR", "AR",
+    "1XBH", "1XBD", "1XBA",
+    "B365H", "B365D", "B365A",
+    "BFH", "BFD", "BFA",
+    "season", "league"
+]
+
+# COLUMN ALIASES
+# These array is made, becasue these special columns may be represented in different ways across the datasets!  
+COLUMN_ALIASES = {
+    "HG": "FTHG",
+    "AG": "FTAG",
+    "Res": "FTR"
+}
 
 def fetch_csv_with_retry(url: str) -> pd.DataFrame:
     """
@@ -107,6 +137,29 @@ def is_correct_season(df: pd.DataFrame, season: str) -> bool:
         return False
 
 
+def standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Ensures dataframe matches EXPECTED_COLUMNS schema.
+    - Renames aliases
+    - Adds missing columns
+    - Drops extra columns
+    - Orders columns
+    """
+
+    # Rename known aliases
+    df = df.rename(columns=COLUMN_ALIASES)
+
+    # Add missing columns
+    for col in EXPECTED_COLUMNS:
+        if col not in df.columns:
+            df[col] = np.nan
+
+    # Keep only expected columns
+    df = df[EXPECTED_COLUMNS]
+
+    return df
+
+
 def process_season(season: str, league_code: str, base_url: str) -> pd.DataFrame:
     """
     Processes a single season by downloading, validating, and enriching match data for the given league.
@@ -139,6 +192,8 @@ def process_season(season: str, league_code: str, base_url: str) -> pd.DataFrame
                 season=full_season,
                 league=league_code
             )
+
+    df = standardize_columns(df)
 
     return df
 
@@ -179,6 +234,7 @@ def load_football_data(league_code: str, seasons: list) -> None:
     # Ensuring that the output directory esists!
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
 
+    all_data = []
     failed = []
     
     logger.info(f"Processing {len(seasons)} seasons")
@@ -203,11 +259,18 @@ def load_football_data(league_code: str, seasons: list) -> None:
                 failed.append(season)
                 continue
 
-            # Defragment to improve performance
-            df = df.copy()
-            
-            write_chunk(df, OUTPUT_FILE)
+            all_data.append(df)
 
+
+    if not all_data:
+        logger.error("No data collected!")
+        return None
+
+    final_df = pd.concat(all_data, ignore_index=True)
+
+    # Saving the data into csv file:
+    final_df.to_csv(OUTPUT_FILE, index=False)
+    
     logger.info(f"Failed seasons: {len(failed)}")
     
 
