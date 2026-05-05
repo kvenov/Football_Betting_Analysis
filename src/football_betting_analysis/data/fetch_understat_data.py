@@ -213,6 +213,7 @@ def load_team_data(league: str, seasons: list) -> None:
             for team, season in tasks
         }
 
+        all_chunks = []
         for future in as_completed(futures):
             team, season = futures[future]
 
@@ -229,14 +230,18 @@ def load_team_data(league: str, seasons: list) -> None:
                 continue
 
             df_chunk = pd.json_normalize(rows, sep='_')
+            all_chunks.append(df_chunk)
 
-            if not df_chunk.empty:
-                write_header = not os.path.exists(file_path)
 
-                df_chunk.to_csv(
+        # The reason that this function stores all of the chunks at once, and then saves them all at once,
+        # is that the concat pandas aligns columns properly during concat and there is no column shifting!
+        # If using the approach of the other functions, some of the values are not parsed in the right way
+        # and there are very big corruptions with the data and thier types!
+        final_df = pd.concat(all_chunks, ignore_index=True)
+        
+        if len(final_df) > 0:
+                final_df.to_csv(
                     file_path,
-                    mode="a",
-                    header=write_header,
                     index=False
                 )
 
