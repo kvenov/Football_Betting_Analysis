@@ -76,7 +76,74 @@ def convert_string_to_datetime(
     return pd.to_datetime(datetime_series, format=format_string, errors='raise')
 
 
-def optimize_dataframe_memory(df: pd.DataFrame):
+def validate_and_cast_dataframe_dtypes(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Validate and cast column dtypes for a pandas DataFrame.
+
+    The function examines each column and converts it to a more appropriate dtype
+    when the contained values permit a narrower representation.
+
+    Rules applied:
+    - float columns containing only integer-valued numbers are cast to integer.
+      If the column has missing values, the nullable Int64 dtype is used.
+    - object/string columns containing only numeric values are cast to int/float.
+      Integer-like values become int, while true decimals become float.
+    - object/string columns containing parseable datetimes are cast to datetime64[ns].
+    - Columns that cannot be safely narrowed remain unchanged.
+    
+    Parameters:
+        df : 
+            The data frame which columns types will be validated and casted if unappropriate!
+        
+    Returns:
+        A copy of the original DataFrame with updated dtypes.
+    """
+    result = df.copy()
+
+    for column in result.columns:
+        series = result[column]
+
+        if series.dtype == object or pd.api.types.is_string_dtype(series.dtype):
+            cleaned = series.dropna().astype(str).str.strip()
+
+            if cleaned.empty:
+                continue
+
+            # First try numeric conversion
+            try:
+                numeric = pd.to_numeric(cleaned, errors="raise")
+            except ValueError:
+                # If numeric conversion fails, try datetime conversion
+                try:
+                    result[column] = pd.to_datetime(series, errors="raise", infer_datetime_format=True)
+                except (ValueError, TypeError):
+                    continue
+            else:
+                integer_like = np.all(np.mod(numeric, 1) == 0)
+
+                if integer_like:
+                    if series.isna().any():
+                        result[column] = numeric.astype("Int64")
+                    else:
+                        result[column] = numeric.astype(np.int64)
+                else:
+                    if series.isna().any():
+                        result[column] = numeric.astype("Float64")
+                    else:
+                        result[column] = numeric.astype(np.float64)
+
+        elif pd.api.types.is_float_dtype(series.dtype):
+            non_na = series.dropna()
+            if not non_na.empty and np.all(np.mod(non_na, 1) == 0):
+                if series.isna().any():
+                    result[column] = series.astype("Int64")
+                else:
+                    result[column] = series.astype(np.int64)
+
+    return result
+
+
+def optimize_dataframe_memory(df: pd.DataFrame) -> pd.DataFrame:
     """
     Optimize memory usage of a DataFrame by converting columns to more efficient data types.
     
