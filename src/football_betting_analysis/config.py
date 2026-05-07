@@ -2,8 +2,7 @@
 
 # League configuration
 LEAGUE = "La_Liga"
-LEAGUE_CODE_FD = "SP1"  # football-data.co.uk code
-
+LEAGUE_CODE_FD = "SP1" 
 # Seasons
 START_SEASON = 2014
 END_SEASON = 2025
@@ -24,3 +23,6 @@ UNDERSTAT_INTERIM_PATH = f"{INTERIM_DATA_PATH}/understat_data/"
 FOOTBALL_DATA_PATH = f"{RAW_DATA_PATH}/football_data_co_uk/"
 FOOTBALL_DATA_BASE_URL = "https://www.football-data.co.uk/mmz4281/{season}/{league}.csv"
 FOOTBALL_DATA_INTERIM_PATH = f"{INTERIM_DATA_PATH}/football_data_co_uk/"
+
+# Elo Ratings:
+ELO_RATINGS_INTERIM_PATH = f"{INTERIM_DATA_PATH}/elo_ratings/"

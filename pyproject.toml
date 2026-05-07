@@ -19,8 +19,9 @@ dependencies = [
     "numpy",
     "matplotlib",
     "requests",
-    "understatapi"
-    "pyarrow"
+    "understatapi",
+    "pyarrow",
+    "rapidfuzz"
 ]
 
 
