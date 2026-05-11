@@ -172,16 +172,17 @@ def optimize_dataframe_memory(df: pd.DataFrame) -> pd.DataFrame:
             col_max = optimized_df[column].max()
             
             if col_min > np.iinfo(np.int8).min and col_max < np.iinfo(np.int8).max:
-                optimized_df[column] = optimized_df[column].astype(np.int8)
+                optimized_df[column] = optimized_df[column].astype(np.int8, errors='ignore')
             elif col_min > np.iinfo(np.int16).min and col_max < np.iinfo(np.int16).max:
-                optimized_df[column] = optimized_df[column].astype(np.int16)
+                optimized_df[column] = optimized_df[column].astype(np.int16, errors='ignore')
             elif col_min > np.iinfo(np.int32).min and col_max < np.iinfo(np.int32).max:
-                optimized_df[column] = optimized_df[column].astype(np.int32)
+                optimized_df[column] = optimized_df[column].astype(np.int32, errors='ignore')
         
         # Optimize float columns
         elif pd.api.types.is_float_dtype(col_type):
             optimized_df[column] = pd.to_numeric(
                 optimized_df[column],
+                errors="coerce",
                 downcast="float"
             )
             
@@ -197,7 +198,7 @@ def optimize_dataframe_memory(df: pd.DataFrame) -> pd.DataFrame:
             # A cardinality is considered to be low if the number of unique values is less than 5% of the total rows
             # This is known and tested to be true!
             if cardinality_ratio < 0.5:
-                optimized_df[column] = optimized_df[column].astype('category')
+                optimized_df[column] = optimized_df[column].astype('category', errors='ignore')
     
     final_memory = optimized_df.memory_usage(deep=True).sum() / 1024**2
     memory_reduction = ((initial_memory - final_memory) / initial_memory) * 100
