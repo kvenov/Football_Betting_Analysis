@@ -30,48 +30,16 @@ The study was preregistered **prior to conducting any formal analysis**, establi
 The authoritative, timestamped preregistration, along with any updates or amendments, is available on this link: \
 ----> [Football_Betting_Analysis](https://doi.org/10.17605/OSF.IO/7UYWV)
 
-### Notes on Deviations
+### Deviations
 
-Any deviations from the original preregistration, as model adjustments, additional features, or methodological refinements, will be **explicitly documented within this repository** to maintain full transparency.
-
----
-
-## Objectives and project development
-
-Although the project main obejective is to build a **reliable and as realistic as possible statistical predictive model**, the project follows a predefined process of analysing different hypotheses and developing different important aspects, in order for the predictive model to be made sufficienty professional!
-
-So this is the exact steps on which the project will be developed and on which the analyses will be made:
-
-* **Defining true team performance**:
-  * First, before comparing anything to betting markets and creating any models, the project defines what “true performance” actually means, which includes important aspects such as: expected goals, teams "actual" strength, attacking vs defending decomposion, Context-adjusted performance etc.
-
-* **Building a predictive models for match outcomes**:
-  * Once performance is defined, the next step is to formalize prediction with a data-driven **time-dependent** predictive model based on team strength and performance metrics which produces reliable probabilities for match outcomes.
-
-  * As statistical models and techniques are considered: **Poisson Regresion, Rating or Elo ratings systems(Which are a way of ranking a football team based on *recent* performance), Dixon-Coles adjustment and time-dependent methods such as **Markov Chain(Monte Carlo)** and Time-Dependent Poisson Regression**
-
-* **Comparing the model probabilities with bookmaker odds**:
-  * As the predictive model is already created, it is compared with the bookmakers odds and estimated for accuracy and efficiency across its results!
-
-* **Identifying influential metrics in betting markets**:
-  * As a final step of the process, the projects tries to find differences between model probabilities and betting odds, which could be explained by measurable performance factors observed during matches.
-
-  * The main idea here is to test what drives the changes of the bettings odds durring matches, and which factors mostly influence these changes.This knowledge is used to increase the efficiency of the predictive model by configuring some priorities at specific metrics.
-
-Having said that I can state that:
-
-### The project follows a structured, consistent and professional process by first, models football outcomes by constructing a latent team-strength representation from performance statistics, then using that strength to build a probabilistic predictive model, benchmarking the model against betting market efficiency, and analyzing systematic deviations between model and market
-
----
+The planned creation of a statistical model was not achieved.
 
 ## Data sources
 
 The following data sources were used in the development of this project:
 
-* **StatsBomb (event-level data)**
 * **Understat (expected goals)**
 * **Football-data.co.uk (odds & results)**
-* **Transfermarkt (player data)**
 * **Elo Ratings (elo type ratings)**
 
 ---
@@ -80,23 +48,81 @@ The following data sources were used in the development of this project:
 
 The project is made consistantly and structured into the following stages:
 
-1. **Data Understanding**
-   * Explore raw datasets (StatsBomb, Understat, Football-Data etc)
+1. **Data cleaning part 1**
+   * Explore and understanding the raw datasets
+   * Cleaning the datasets and most of their features
 
-2. **Data Cleaning & Preparation**
-   * Handle missing values, standardize formats
+2. **Data Cleaning Part 2**
+   * Merging the datasets
+   * Feature engeenering (xG-based strength,rolling forms,shots aggregations etc.)
+   * Creating the final dataset
 
 3. **Exploratory Data Analysis (EDA)**
    * Analyze distributions, trends, and relationships
 
-4. **Feature Engineering**
-   * Construct performance metrics (xG-based strength, form, etc.)
+## Installation and Project Setup
 
-5. **Modeling**
-   * Poisson models, Elo ratings, ML models
+This project is designed to be fully reproducible and installable as a professional Python package.
+The entire workflow — from data collection to analysis and modeling — can be reproduced using the provided commands and project structure.
 
-6. **Evaluation**
-   * Compare model probabilities vs bookmaker odds
+### 1.Clone the Repository
 
-7. **Analysis of Market Efficiency**
-   * Identify systematic deviations and inefficiencies
+Clone the project locally and move into the project directory.
+
+git clone <https://github.com/kvenov/Football_Betting_Analysis.git>
+
+### 2.Create a Virtual Environment
+
+Create an isolated Python environment for the project.
+
+Linux / macOS \
+`python -m venv .venv`
+`source .venv/bin/activate`
+
+Windows \
+
+`python -m venv .venv`
+`.venv\Scripts\activate`
+
+Using a virtual environment guarantees:
+
+### 3.Install the Project
+
+Install the project in editable mode.
+
+`pip install -e .`
+
+This command:
+
+installs all required dependencies from pyproject.toml \
+makes the project importable everywhere \
+enables package-style imports \
+allows notebooks and scripts to share the same modules cleanly
+
+After installation, imports such as: \
+`from football_betting_analysis.config.settings import LEAGUE`
+
+### 4.Register Jupyter Kernel (Optional)
+
+**For the Jupyter notebooks:** \
+`python -m ipykernel install --user --name football-env`
+
+This creates a dedicated kernel for the project environment.
+
+### 5.Install Additional Packages
+
+All dependencies must be managed through: **pyproject.toml**
+
+Whenever a new package is added to the project: \
+Add it to the dependencies section \
+Re-run: `pip install -e .`
+
+### 6.Loading Datasets \
+
+**Understat/Football-Data.co.uk:** \
+These two datasets are fetched and saved into folders using this command: `python -m football_betting_analysis.data.load_datasets`
+
+**Elo Ratings** \
+The elo ratings dataset should be downloaded from [Kaggle](https://www.kaggle.com/datasets/adamgbor/club-football-match-data-2000-2025) and stored into the `data/raw/elo_ratings` folder
+
+## After installing the required packages and all of the datasets are loaded, everything will be ready to work
