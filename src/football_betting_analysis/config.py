@@ -25,4 +25,5 @@ FOOTBALL_DATA_BASE_URL = "https://www.football-data.co.uk/mmz4281/{season}/{leag
 FOOTBALL_DATA_INTERIM_PATH = f"{INTERIM_DATA_PATH}/football_data_co_uk/"
 
 # Elo Ratings:
+ELO_RATINGS_DATA_PATH = f"{RAW_DATA_PATH}/elo_ratings/"
 ELO_RATINGS_INTERIM_PATH = f"{INTERIM_DATA_PATH}/elo_ratings/"
