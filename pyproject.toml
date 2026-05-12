@@ -21,7 +21,8 @@ dependencies = [
     "requests",
     "understatapi",
     "pyarrow",
-    "rapidfuzz"
+    "rapidfuzz",
+    "seaborn"
 ]
 
 
