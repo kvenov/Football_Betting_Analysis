@@ -38,9 +38,9 @@ The planned creation of a statistical model was not achieved.
 
 The following data sources were used in the development of this project:
 
-* **Understat (expected goals)**
-* **Football-data.co.uk (odds & results)**
-* **Elo Ratings (elo type ratings)**
+* **Understat (expected goals)** - <https://collinb9.github.io/understatAPI/understatapi.api.html>
+* **Football-data.co.uk (odds & results)** - <https://www.football-data.co.uk/spainm.php>
+* **Elo Ratings (elo type ratings)** - <https://www.kaggle.com/datasets/adamgbor/club-football-match-data-2000-2025>
 
 ---
 
@@ -60,6 +60,8 @@ The project is made consistantly and structured into the following stages:
 3. **Exploratory Data Analysis (EDA)**
    * Analyze distributions, trends, and relationships
 
+---
+
 ## Installation and Project Setup
 
 This project is designed to be fully reproducible and installable as a professional Python package.
@@ -68,23 +70,19 @@ The entire workflow — from data collection to analysis and modeling — can be
 ### 1.Clone the Repository
 
 Clone the project locally and move into the project directory.
-
-git clone <https://github.com/kvenov/Football_Betting_Analysis.git>
+* git clone <https://github.com/kvenov/Football_Betting_Analysis.git>
 
 ### 2.Create a Virtual Environment
 
 Create an isolated Python environment for the project.
 
-Linux / macOS \
+**Linux / macOS** \
 `python -m venv .venv`
 `source .venv/bin/activate`
 
-Windows \
-
+**Windows** \
 `python -m venv .venv`
 `.venv\Scripts\activate`
-
-Using a virtual environment guarantees:
 
 ### 3.Install the Project
 
@@ -92,15 +90,15 @@ Install the project in editable mode.
 
 `pip install -e .`
 
-This command:
-
-installs all required dependencies from pyproject.toml \
-makes the project importable everywhere \
-enables package-style imports \
-allows notebooks and scripts to share the same modules cleanly
+This command will:
+* installs all required dependencies from pyproject.toml
+* makes the project importable everywhere
+* enables package-style imports
+* allows notebooks and scripts to share the same modules cleanly
 
 After installation, imports such as: \
-`from football_betting_analysis.config.settings import LEAGUE`
+  `from football_betting_analysis.config.settings import LEAGUE` \
+can be made from everywhere in the project
 
 ### 4.Register Jupyter Kernel (Optional)
 
@@ -114,8 +112,7 @@ This creates a dedicated kernel for the project environment.
 All dependencies must be managed through: **pyproject.toml**
 
 Whenever a new package is added to the project: \
-Add it to the dependencies section \
-Re-run: `pip install -e .`
+Add it to the dependencies section and re-run: `pip install -e .`
 
 ### 6.Loading Datasets \
 
@@ -123,6 +120,6 @@ Re-run: `pip install -e .`
 These two datasets are fetched and saved into folders using this command: `python -m football_betting_analysis.data.load_datasets`
 
 **Elo Ratings** \
-The elo ratings dataset should be downloaded from [Kaggle](https://www.kaggle.com/datasets/adamgbor/club-football-match-data-2000-2025) and stored into the `data/raw/elo_ratings` folder
+The elo ratings dataset should be downloaded from [Kaggle-Club-Football-Match-Data](https://www.kaggle.com/datasets/adamgbor/club-football-match-data-2000-2025) and stored into the `data/raw/elo_ratings` folder!
 
 ## After installing the required packages and all of the datasets are loaded, everything will be ready to work
