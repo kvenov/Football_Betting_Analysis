@@ -1,8 +1,10 @@
 # CORE PROJECT CONFIGURATION
 
 # League configuration
+SOCCERDATA_LEAGUE = "ESP-La Liga"
 LEAGUE = "La_Liga"
-LEAGUE_CODE_FD = "SP1" 
+LEAGUE_CODE_FD = "SP1"
+
 # Seasons
 START_SEASON = 2014
 END_SEASON = 2025
@@ -27,3 +29,7 @@ FOOTBALL_DATA_INTERIM_PATH = f"{INTERIM_DATA_PATH}/football_data_co_uk/"
 # Elo Ratings:
 ELO_RATINGS_DATA_PATH = f"{RAW_DATA_PATH}/elo_ratings/"
 ELO_RATINGS_INTERIM_PATH = f"{INTERIM_DATA_PATH}/elo_ratings/"
+
+# Soccerdata:
+SOCCER_DATA_PATH = f"{RAW_DATA_PATH}/soccer_data/"
+SOCCER_DATA_INTERIM_PATH = f"{INTERIM_DATA_PATH}/soccer_data/"

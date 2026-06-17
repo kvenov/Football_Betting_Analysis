@@ -89,6 +89,12 @@ data/processed/*
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 
+# exclude data fetching files:
+src/football_betting_analysis/data/fetch_soccerdata.py
+
+# lock files:
+downloaded_files/*
+
 # Mac OS-specific storage files
 .DS_Store
 Thumbs.db
