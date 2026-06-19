@@ -9,7 +9,14 @@ LEAGUE_CODE_FD = "SP1"
 START_SEASON = 2014
 END_SEASON = 2025
 
+# Start/End date of the Spanish La Liga:
+START_DATE = '2014-08-01'
+END_DATE = '2025-05-31'
+
 SEASONS = list(range(START_SEASON, END_SEASON))
+
+# Project date format:
+DATE_FORMAT = '%Y-%m-%d'
 
 # Data paths
 RAW_DATA_PATH = "data/raw/"
@@ -33,3 +40,7 @@ ELO_RATINGS_INTERIM_PATH = f"{INTERIM_DATA_PATH}/elo_ratings/"
 # Soccerdata:
 SOCCER_DATA_PATH = f"{RAW_DATA_PATH}/soccer_data/"
 SOCCER_DATA_INTERIM_PATH = f"{INTERIM_DATA_PATH}/soccer_data/"
+
+# Transfermarkt:
+TRANSFERMARKT_DATA_PATH = f"{RAW_DATA_PATH}/transfermarkt_data/"
+TRANSFERMARKT_DATA_INTERIM_PATH = f"{INTERIM_DATA_PATH}/transfermarkt_data/"
