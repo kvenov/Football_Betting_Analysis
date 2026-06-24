@@ -85,6 +85,7 @@ target/
 data/raw/*
 data/interim/*
 data/processed/*
+data/internal/*
 !data/raw/.gitkeep
 !data/interim/.gitkeep
 !data/processed/.gitkeep

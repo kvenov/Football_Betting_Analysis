@@ -18,6 +18,9 @@ SEASONS = list(range(START_SEASON, END_SEASON))
 # Project date format:
 DATE_FORMAT = '%Y-%m-%d'
 
+# Time window: used for the creation of the player importance features(in the transfermarkt cleaning notebook)
+WINDOW = 10
+
 # Data paths
 RAW_DATA_PATH = "data/raw/"
 INTERIM_DATA_PATH = "data/interim/"
