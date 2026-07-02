@@ -1,5 +1,20 @@
 import pandas as pd
 
+def transform_match_round(round: str) -> int:
+    """
+        Given a round str in format **n. Matchday**, the function transforms 
+            the round into integer in format **n**!
+        
+        Parameters:
+            round(str) : The round feature to be transformed
+        
+        Returns:
+            interger : The transformed round in format **n**
+    """
+    
+    round_transformed = int(round.split('.')[0])
+    return round_transformed
+
 
 def build_player_tenure(player_df, phantom_clubs_ids):
     """
