@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from football_betting_analysis.features.constants import STADIUM_CAPACITIES
+
 NEWCOMER_IMPORTANCE_THRESHOLD = 0.15 # min normalised score to include newcomer
 
 NEWCOMER_VALUE_WINDOW_DAYS = 730 # +-days around transfer to compute club baseline
@@ -13,6 +15,19 @@ NEWCOMER_HIST_WEIGHT = 0.60  # weight on historical importance
 NEWCOMER_VALUE_WEIGHT = 0.40  # weight on transfer-value signal
 
 PHANTOM_CLUB_IDS = {515, 123, 75} # Without Club, Retired, Unknown
+
+# Formation stability window: last 5 matches
+FORMATION_WINDOW = 5
+
+# Minimum number of matches a referee must have officiated for bias stats
+# to be considered reliable - below this threshold, bias features go up to 0 (neutral)
+REFEREE_MIN_MATCHES = 15
+
+# Attendance "full house" threshold - crowd proportion above this = high pressure
+ATTENDANCE_HIGH_THRESHOLD = 0.85
+
+# Manager tenure threshold for "stable" regime (in matches managed)
+MANAGER_STABLE_THRESHOLD = 38 # approximately one half-season
 
 def create_season_feature(df: pd.DataFrame, date_str: str) -> pd.Series:
     """
@@ -138,6 +153,355 @@ def calculate_time_based_ewma(
                         adjust=adjust)
                    .mean()
     ).reset_index(level=0, drop=True)
+
+def calculate_weighted_rolling_average(values, window=5) -> pd.Series:
+    """
+    Calculates weighted rolling average where recent matches matter more.
+
+    Parameters:
+        values (Series) : the column on which the rolling average to be calculated from
+        window (int) : The max amount of past matches to include into the calculation of the rolling average!
+
+    Returns:
+        Series: The calculated rolling averages 
+    
+    Example weights for window=5:
+    [1, 2, 3, 4, 5]
+
+    Most recent match receives highest weight.
+    """
+
+    results = []
+
+    for i in range(len(values)):
+
+        # Exclude current match to prevent leakage
+        historical = values.iloc[max(0, i-window):i]
+
+        # No previous history
+        if len(historical) == 0:
+            results.append(np.nan)
+            continue
+
+        # Increasing weights:
+        # older -> lower
+        # recent -> higher
+        weights = np.arange(1, len(historical) + 1)
+
+        weighted_avg = np.average(
+            historical,
+            weights=weights
+        )
+
+        results.append(weighted_avg)
+
+    return pd.Series(results, index=values.index)
+
+
+def compute_formation_stability_features(
+    df: pd.DataFrame, 
+    window: int = FORMATION_WINDOW
+) -> pd.DataFrame:
+    """
+    Compute formation stability features per team per match.
+    Requires home_club_id, away_club_id, date, home_formation, away_formation.
+    """
+    
+    # Build long-format formation history
+    home_f = df[["game_id", "date", "home_club_id", "home_formation"]].rename(
+        columns={"home_club_id": "team_id", "home_formation": "formation"}
+    )
+    away_f = df[["game_id", "date", "away_club_id", "away_formation"]].rename(
+        columns={"away_club_id": "team_id", "away_formation": "formation"}
+    )
+    
+    form_hist = pd.concat([home_f, away_f], ignore_index=True)
+    form_hist = form_hist.sort_values(["team_id", "date"]).reset_index(drop=True)
+    form_hist["formation"] = form_hist["formation"].fillna("Unknown")
+ 
+    # Rolling window features per team
+    results = []
+    for team_id, grp in form_hist.groupby("team_id"):
+        grp = grp.sort_values("date").reset_index(drop=True)
+        formations = grp["formation"].values
+        game_ids = grp["game_id"].values
+        n = len(grp)
+ 
+        changes_list = []
+        modal_list = []
+        new_form_list = []
+ 
+        for i in range(n):
+            # Only look at strictly PRIOR matches (no leakage)
+            start = max(0, i - window)
+            window_forms = formations[start:i] # prior to current
+ 
+            if len(window_forms) == 0:
+                changes_list.append(0)
+                modal_list.append(formations[i])
+                new_form_list.append(0)
+                continue
+ 
+            # Number of distinct formations in the window
+            unique_forms = len(set(window_forms))
+            changes = unique_forms - 1
+            changes_list.append(changes)
+ 
+            # Most common formation in window
+            modal_form = pd.Series(window_forms).mode().iloc[0]
+            modal_list.append(modal_form)
+ 
+            # Is current formation different from the most common prior one?
+            new_form_list.append(int(formations[i] != modal_form))
+ 
+        grp["formation_changes"] = changes_list
+        grp["modal_formation"] = modal_list
+        grp["using_new_formation"] = new_form_list
+        grp["formation_consistency"] = 1 - (grp["formation_changes"] / max(window - 1, 1))
+        grp["formation_consistency"] = grp["formation_consistency"].clip(0, 1)
+        results.append(grp[["game_id", "team_id", "formation_changes",
+                              "formation_consistency", "using_new_formation"]])
+ 
+    stability_df = pd.concat(results, ignore_index=True)
+ 
+    # Pivot back to home/away
+    home_stab = stability_df.merge(
+        df[["game_id", "home_club_id"]].rename(columns={"home_club_id": "team_id"}),
+        on=["game_id", "team_id"], how="inner"
+    ).rename(columns={
+        "formation_changes": "home_formation_changes_5",
+        "formation_consistency": "home_formation_consistency",
+        "using_new_formation": "home_using_new_formation",
+    }).drop(columns="team_id")
+ 
+    away_stab = stability_df.merge(
+        df[["game_id", "away_club_id"]].rename(columns={"away_club_id": "team_id"}),
+        on=["game_id", "team_id"], how="inner"
+    ).rename(columns={
+        "formation_changes": "away_formation_changes_5",
+        "formation_consistency": "away_formation_consistency",
+        "using_new_formation": "away_using_new_formation",
+    }).drop(columns="team_id")
+ 
+    df = df.merge(home_stab, on="game_id", how="left")
+    df = df.merge(away_stab, on="game_id", how="left")
+    
+    return df
+
+
+def compute_referee_bias_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute referee bias features.
+    Uses only matches prior to the current one (no leakage).
+    Requires: referee, home_goals_full, away_goals_full, home_fouls, away_fouls,
+              home_yellow_cards, away_yellow_cards, home_red_cards, away_red_cards and date.
+    """
+    df = df.copy()
+    df = df.sort_values("date").reset_index(drop=True)
+    
+    df["_result_home_win"] = (df["home_goals_full"] > df["away_goals_full"]).astype(int)
+    df["_total_fouls"] = df["home_fouls"].fillna(0) + df["away_fouls"].fillna(0)
+    df["_total_yellows"] = df["home_yellow_cards"].fillna(0) + df["away_yellow_cards"].fillna(0)
+    df["_total_reds"] = df["home_red_cards"].fillna(0) + df["away_red_cards"].fillna(0)
+ 
+    # League-wide averages (used for normalisation)
+    league_hw_rate = df["_result_home_win"].mean()
+    league_foul_avg = df["_total_fouls"].mean()
+    league_yelow_card_avg = df["_total_yellows"].mean()
+    league_red_card_avg = df["_total_reds"].mean()
+    league_card_avg = league_yelow_card_avg + league_red_card_avg
+ 
+    ref_home_bias_list = []
+    ref_foul_rate_list = []
+    ref_card_rate_list = []
+ 
+    for idx, row in df.iterrows():
+        ref = row["referee"]
+        if pd.isna(ref) or ref == "":
+            ref_home_bias_list.append(0.0)
+            ref_foul_rate_list.append(0.0)
+            ref_card_rate_list.append(0.0)
+            continue
+ 
+        # Only use matches strictly before this one
+        prior = df[(df["referee"] == ref) & (df["date"] < row["date"])]
+ 
+        if len(prior) < REFEREE_MIN_MATCHES:
+            ref_home_bias_list.append(0.0)
+            ref_foul_rate_list.append(0.0)
+            ref_card_rate_list.append(0.0)
+            continue
+ 
+        hw_rate = prior["_result_home_win"].mean()
+        foul_rate = prior["_total_fouls"].mean()
+        card_rate = prior["_total_yellows"].mean() + prior["_total_reds"].mean()
+ 
+        # Bias = deviation from league average (zero-centred)
+        ref_home_bias_list.append(round(hw_rate - league_hw_rate, 4))
+        ref_foul_rate_list.append(round(foul_rate / max(league_foul_avg, 1), 4))
+        ref_card_rate_list.append(round(card_rate / max(league_card_avg, 1), 4))
+ 
+    df["referee_home_bias"] = ref_home_bias_list
+    df["referee_foul_rate"] = ref_foul_rate_list
+    df["referee_card_rate"] = ref_card_rate_list
+ 
+    df = df.drop(columns=["_result_home_win", "_total_fouls", "_total_yellows", "_total_reds"])
+    return df
+
+
+def compute_attendance_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute attendance-based pressure features.
+    Requires: attendance, home_club_name, home_match_importance (from match importance section),
+              away_relegation_pressure (from match importance section).
+    """
+    df = df.copy()
+ 
+    df["_capacity"] = df["h_title"].map(STADIUM_CAPACITIES).fillna(30000).astype(float)
+    df["attendance_num"] = pd.to_numeric(df["attendance"], errors="coerce").fillna(0).astype(float)
+ 
+    df["attendance_ratio"] = (
+        df["attendance_num"] / df["_capacity"]
+    ).clip(0, 1.0)
+ 
+    df["high_crowd_pressure"] = (
+        df["attendance_ratio"] >= ATTENDANCE_HIGH_THRESHOLD
+    ).astype(int)
+ 
+    # Team avg attendance (rolling, strictly prior matches)
+    home_att = df[["game_id", "date", "home_club_id", "attendance_num"]].rename(
+        columns={"home_club_id": "team_id"}
+    )
+    away_att = df[["game_id", "date", "away_club_id", "attendance_num"]].rename(
+        columns={"away_club_id": "team_id"}
+    )
+    all_att = pd.concat([home_att, away_att], ignore_index=True).sort_values(["team_id", "date"])
+ 
+    all_att["team_avg_att_prior"] = (
+        all_att.groupby("team_id")["attendance_num"]
+        .transform(lambda s: s.shift(1).expanding().mean())
+    )
+    all_att["attendance_vs_avg"] = (
+        all_att["attendance_num"] / all_att["team_avg_att_prior"].replace(0, np.nan)
+    ).fillna(1.0).clip(0, 3.0)
+ 
+    home_avg = all_att.merge(
+        df[["game_id", "home_club_id"]].rename(columns={"home_club_id": "team_id"}),
+        on=["game_id", "team_id"]
+    ).rename(columns={"attendance_vs_avg": "home_attendance_vs_avg"})[["game_id", "home_attendance_vs_avg"]]
+ 
+    df = df.merge(home_avg, on="game_id", how="left")
+    df["home_attendance_vs_avg"] = df["home_attendance_vs_avg"].fillna(1.0)
+ 
+    df = df.drop(columns=["_capacity"])
+    return df
+
+
+def compute_manager_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute manager tenure and stability features.
+    Manager changes are detected when home_club_manager_name changes between
+    consecutive matches for the same team.
+    Requires: game_id, date, home_club_id, away_club_id,
+              home_club_manager_name, away_club_manager_name,
+              home_goals_full, away_goals_full.
+    """
+    df = df.copy()
+ 
+    # Build long-format manager history
+    home_m = df[["game_id", "date", "home_club_id", "home_club_manager_name",
+                  "home_goals_full", "away_goals_full"
+                ]].rename(columns={
+                    "home_club_id": "team_id", "home_club_manager_name": "manager",
+                    "home_goals_full": "gf", "away_goals_full": "ga",
+                })
+    home_m["win"] = (home_m["gf"] > home_m["ga"]).astype(int)
+ 
+    away_m = df[["game_id", "date", "away_club_id", "away_club_manager_name",
+                  "away_goals_full", "home_goals_full"
+                ]].rename(columns={
+                    "away_club_id": "team_id", "away_club_manager_name": "manager",
+                    "away_goals_full": "gf", "home_goals_full": "ga",
+                })
+    away_m["win"] = (away_m["gf"] > away_m["ga"]).astype(int)
+ 
+    mgr_hist = pd.concat([home_m, away_m], ignore_index=True)
+    mgr_hist = mgr_hist.sort_values(["team_id", "date"]).reset_index(drop=True)
+ 
+    results = []
+    for team_id, grp in mgr_hist.groupby("team_id"):
+        grp = grp.sort_values("date").reset_index(drop=True)
+        managers = grp["manager"].values
+        wins = grp["win"].values
+ 
+        matches_in_post = []
+        win_rates = []
+ 
+        current_mgr = None
+        stint_start_idx = 0
+ 
+        for i in range(len(grp)):
+            mgr = managers[i]
+            if mgr != current_mgr:
+                current_mgr = mgr
+                stint_start_idx = i
+ 
+            # Matches in current stint before this match
+            stint_matches_prior = i - stint_start_idx # 0 on first match of new manager
+            matches_in_post.append(stint_matches_prior)
+ 
+            # Win rate in current stint (prior matches only)
+            if stint_matches_prior > 0:
+                stint_wins = wins[stint_start_idx:i]
+                win_rates.append(round(stint_wins.mean(), 4))
+            else:
+                win_rates.append(np.nan) # no prior data yet for this manager
+ 
+        grp["manager_matches_in_post"] = matches_in_post
+        grp["manager_win_rate"] = win_rates
+        results.append(grp[["game_id", "team_id",
+                              "manager_matches_in_post", "manager_win_rate"]])
+ 
+    mgr_df = pd.concat(results, ignore_index=True)
+    mgr_df["manager_stable"] = (
+        mgr_df["manager_matches_in_post"] >= MANAGER_STABLE_THRESHOLD
+    ).astype(int)
+    mgr_df["manager_win_rate"] = mgr_df["manager_win_rate"].fillna(0.33) # prior neutral
+ 
+    # Merge home
+    df = df.merge(
+        mgr_df[mgr_df["game_id"].isin(df["game_id"])].merge(
+            df[["game_id", "home_club_id"]].rename(columns={"home_club_id": "team_id"}),
+            on=["game_id", "team_id"]
+        ).rename(columns={
+            "manager_matches_in_post": "home_manager_matches_in_post",
+            "manager_stable": "home_manager_stable",
+            "manager_win_rate": "home_manager_win_rate",
+        }).drop(columns="team_id"),
+        on="game_id", how="left"
+    )
+    
+    # Merge away
+    df = df.merge(
+        mgr_df[mgr_df["game_id"].isin(df["game_id"])].merge(
+            df[["game_id", "away_club_id"]].rename(columns={"away_club_id": "team_id"}),
+            on=["game_id", "team_id"]
+        ).rename(columns={
+            "manager_matches_in_post": "away_manager_matches_in_post",
+            "manager_stable": "away_manager_stable",
+            "manager_win_rate": "away_manager_win_rate",
+        }).drop(columns="team_id"),
+        on="game_id", how="left"
+    )
+ 
+    # Default fills
+    for side in ["home", "away"]:
+        df[f"{side}_manager_matches_in_post"] = df[f"{side}_manager_matches_in_post"].fillna(0).astype(int)
+        df[f"{side}_manager_stable"] = df[f"{side}_manager_stable"].fillna(0).astype(int)
+        df[f"{side}_manager_win_rate"] = df[f"{side}_manager_win_rate"].fillna(0.33)
+ 
+    return df
+
 
 def create_team_squad(
     player_snapshot: pd.DataFrame, 
