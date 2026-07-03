@@ -5,6 +5,9 @@
 - [1.1] - Covid Impact over football matches
   - [Impact of the COVID-19 pandemic on association football](https://en.wikipedia.org/wiki/Impact_of_the_COVID-19_pandemic_on_association_football)
 
+- [1.2] - Wikipedia about **Expected goals**
+  - [Expected Goals](https://en.wikipedia.org/wiki/Expected_goals)
+
 [3] - Football competitions priorities
 
 - [Bleacher Report](https://bleacherreport.com/articles/1684009-power-ranking-worlds-10-best-football-tournaments)

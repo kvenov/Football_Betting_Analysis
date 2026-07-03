@@ -1,0 +1,36 @@
+# STADIUM CAPACITIES
+# Official capacities of the clubs' primary La Liga stadiums
+
+STADIUM_CAPACITIES = {
+    "Malaga": 30044,                   
+    "Sevilla": 43883,                   
+    "Granada": 19336,                   
+    "Almeria": 15274,                   
+    "Eibar": 8164,                      
+    "Barcelona": 99354,               
+    "Celta Vigo": 29000,                
+    "Levante": 26354,                   
+    "Real Madrid": 81044,               
+    "Rayo Vallecano": 14708,            
+    "Getafe": 16800,                    
+    "Valencia": 49430,                  
+    "Cordoba": 21822,                  
+    "Athletic Club": 53289,             
+    "Atletico Madrid": 68456,           
+    "Espanyol": 40500,                  
+    "Villarreal": 23500,                
+    "Deportivo La Coruna": 32660,       
+    "Real Sociedad": 39500,             
+    "Elche": 31388,                     
+    "Sporting Gijon": 29538,            
+    "Real Betis": 60721,                
+    "Las Palmas": 32392,               
+    "Osasuna": 23576,                  
+    "Leganes": 12450,                   
+    "Alaves": 19840,                 
+    "Girona": 14500,                    
+    "Real Valladolid": 27618,           
+    "SD Huesca": 9100,                  
+    "Mallorca": 23142,                  
+    "Cadiz": 20724                      
+}
