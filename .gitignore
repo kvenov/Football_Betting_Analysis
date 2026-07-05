@@ -84,7 +84,6 @@ target/
 # exclude data from source control
 data/raw/*
 data/interim/*
-data/processed/*
 data/internal/*
 !data/raw/.gitkeep
 !data/interim/.gitkeep
