@@ -1,0 +1,4 @@
+[core]
+    remote = gcs_remote
+['remote "gcs_remote"']
+    url = gs://bucket-football_matches_predictions-103ec46c-f533-43bd-b21/DVC_processed_data
