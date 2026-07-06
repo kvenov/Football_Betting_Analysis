@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Dict
 
-from football_betting_analysis.config import SOCCER_DATA_PATH, TRANSFERMARKT_DATA_PATH
+from football_betting_analysis.config import SOCCER_DATA_PATH, TRANSFERMARKT_DATA_PATH, ELO_RATINGS_DATA_PATH
 
 @dataclass(frozen=True)
 class Dataset:
@@ -23,6 +23,34 @@ DATASETS: Dict[str, Dataset] = {
             'venue', 'result', 'GF', 'GA', 'opponent', 'Poss', 'Attendance',
             'Captain', 'Formation', 'Opp Formation', 'Referee', 'match_report',
             'Notes'
+        )
+    ),
+    "elo_ratings_matches": Dataset(
+        name="Matches",
+        filename=f"{ELO_RATINGS_DATA_PATH}Matches.csv",
+        url=(
+            "https://storage.googleapis.com/bucket-football_matches_predictions-103ec46c-f533-43bd-b21/elo_ratings/Matches.csv"
+        ),
+        required_columns=(
+            'Division', 'MatchDate', 'MatchTime', 'HomeTeam', 'AwayTeam', 'HomeElo',
+            'AwayElo', 'Form3Home', 'Form5Home', 'Form3Away', 'Form5Away', 'FTHome',
+            'FTAway', 'FTResult', 'HTHome', 'HTAway', 'HTResult', 'HomeShots',
+            'AwayShots', 'HomeTarget', 'AwayTarget', 'HomeFouls', 'AwayFouls',
+            'HomeCorners', 'AwayCorners', 'HomeYellow', 'AwayYellow', 'HomeRed',
+            'AwayRed', 'OddHome', 'OddDraw', 'OddAway', 'MaxHome', 'MaxDraw',
+            'MaxAway', 'Over25', 'Under25', 'MaxOver25', 'MaxUnder25', 'HandiSize',
+            'HandiHome', 'HandiAway', 'C_LTH', 'C_LTA', 'C_VHD', 'C_VAD', 'C_HTB',
+            'C_PHB'
+        )
+    ),
+    "elo_ratings": Dataset(
+        name="EloRatings",
+        filename=f"{ELO_RATINGS_DATA_PATH}EloRatings.csv",
+        url=(
+            "https://storage.googleapis.com/bucket-football_matches_predictions-103ec46c-f533-43bd-b21/elo_ratings/EloRatings.csv"
+        ),
+        required_columns=(
+            'date', 'club', 'country', 'elo'
         )
     ),
     "appearances": Dataset(
