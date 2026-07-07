@@ -1,0 +1,65 @@
+name: baseline_processed
+
+input_path: data/processed/processed_final_dataset_v1.parquet
+
+source: dvc
+
+path: data/processed/baseline_processed.parquet
+
+revision: baseline
+
+features:
+  - h_title
+  - a_title
+  - home_formation
+  - away_formation
+  - home_elo
+  - away_elo
+  - elo_rating_diff
+  - home_form_last_3
+  - home_form_last_5
+  - away_form_last_3
+  - away_form_last_5
+  - odds_bet365_home
+  - odds_bet365_draw
+  - odds_bet365_away
+  - h_rolling_goals_5
+  - h_rolling_goals_against_5
+  - h_rolling_shots_5
+  - h_rolling_shots_against_5
+  - h_rolling_sot_5
+  - h_rolling_sot_against_5
+  - h_rolling_xG_5
+  - h_rolling_xGA_5
+  - h_rolling_poss_5
+  - h_rolling_poss_against_5
+  - h_rolling_big_chances_5
+  - h_rolling_avg_xG_per_shot_5
+  - h_rolling_shot_conversion_5
+  - h_rolling_open_play_xG_5
+  - h_rolling_set_piece_xG_5
+  - a_rolling_goals_5
+  - a_rolling_goals_against_5
+  - a_rolling_shots_5
+  - a_rolling_shots_against_5
+  - a_rolling_sot_5
+  - a_rolling_sot_against_5
+  - a_rolling_xG_5
+  - a_rolling_xGA_5
+  - a_rolling_poss_5
+  - a_rolling_poss_against_5
+  - a_rolling_big_chances_5
+  - a_rolling_avg_xG_per_shot_5
+  - a_rolling_shot_conversion_5
+  - a_rolling_open_play_xG_5
+  - a_rolling_set_piece_xG_5
+  - h_rolling_goal_diff_5
+  - h_rolling_poss_diff_5
+  - a_rolling_goal_diff_5
+  - a_rolling_poss_diff_5
+
+target: result_full
+
+description: The baseline version of the data for the baseline experiment
+
+format: parquet

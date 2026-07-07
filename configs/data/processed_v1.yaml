@@ -1,0 +1,13 @@
+dataset:
+    name: processed_dataset_v1
+
+    dvc:
+      path: data/processed/processed_final_dataset_v1.parquet
+
+      revision: processed_v1 # Version tag
+
+    description:
+        The initial version of the final processed dataset, with all of the features.
+
+    format:
+        parquet

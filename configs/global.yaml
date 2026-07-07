@@ -1,0 +1,17 @@
+project_name: football_betting_analysis
+
+mlflow:
+  tracking_uri: http://localhost:5000
+  experiment_prefix: football_experiments
+
+random_seed: 42
+
+paths:
+  data_root: data/
+  models_root: models/
+  reports_root: reports/
+  logs_root: logs/
+
+target:
+  column: result_full
+  classes: ["H", "D", "A"]

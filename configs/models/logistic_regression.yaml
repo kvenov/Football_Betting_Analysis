@@ -1,0 +1,7 @@
+type: LogisticRegression
+
+params:
+  l1_ratio: 0
+  C: 1.0
+  solver: lbfgs
+  max_iter: 500

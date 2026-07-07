@@ -1,0 +1,14 @@
+metrics:
+  - accuracy
+  - f1_macro
+  - precision_macro
+  - recall_macro
+
+plots:
+  classification_report: true
+  confusion_matrix: true
+  roc_curve: true
+  pr_curve: true
+  predictions_csv: true
+
+output_dir: reports/evaluation
