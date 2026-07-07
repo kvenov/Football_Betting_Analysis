@@ -181,16 +181,16 @@ Every experiment is completely defined through YAML configuration files.
 
 The experiment configuration specifies:
 
-- dataset version
-- preprocessing
-- feature selection
-- dimensionality reduction
-- machine learning model
-- evaluation settings
-- serialization
-- logging
-- MLflow
-- Optuna tuning
+* dataset version
+* preprocessing
+* feature selection
+* dimensionality reduction
+* machine learning model
+* evaluation settings
+* serialization
+* logging
+* MLflow
+* Optuna tuning
 
 No Python code needs to be modified to create a new experiment.
 
@@ -202,8 +202,8 @@ The `DataLoader` loads the exact dataset version directly from the DVC remote st
 
 The experiment only specifies:
 
-- dataset path
-- DVC revision (Git tag/commit)
+* dataset path
+* DVC revision (Git tag/commit)
 
 This guarantees perfect reproducibility.
 
@@ -215,9 +215,9 @@ Football matches are chronological observations.
 
 Therefore, the dataset is split sequentially without shuffling.
 
-```
-Past Matches ---------------------- Future Matches
-        Training                        Testing
+```text
+     Past Matches ---------------------- Future Matches
+     Training                            Testing
 ```
 
 This prevents information leakage.
@@ -230,17 +230,17 @@ The `PipelineBuilder` creates a Scikit-Learn pipeline entirely from the configur
 
 Pipeline structure:
 
-```
-Preprocessing
-        │
-        ▼
-Feature Selection
-        │
-        ▼
-Dimensionality Reduction
-        │
-        ▼
-Machine Learning Model
+```text
+     Preprocessing
+          │
+          ▼
+     Feature Selection
+          │
+          ▼
+     Dimensionality Reduction
+          │
+          ▼
+     Machine Learning Model
 ```
 
 Each stage is optional and controlled through the experiment configuration.
@@ -255,30 +255,30 @@ Different feature groups can use different preprocessing pipelines.
 
 Example:
 
-```
-Match Statistics
-    └── StandardScaler
+```text
+     Match Statistics
+     └── StandardScaler
 
-Odds
-    └── log1p
-    └── StandardScaler
+     Odds
+     └── log1p
+     └── StandardScaler
 
-Rolling Statistics
-    └── MinMaxScaler
+     Rolling Statistics
+     └── MinMaxScaler
 
-Teams
-    └── Target Encoding
+     Teams
+     └── Target Encoding
 
-Formations
-    └── OneHot Encoding
+     Formations
+     └── OneHot Encoding
 ```
 
 Each feature group can have:
 
-- imputation
-- transformations
-- scaling
-- encoding
+* imputation
+* transformations
+* scaling
+* encoding
 
 independently configured.
 
@@ -288,12 +288,12 @@ independently configured.
 
 Optional feature selection techniques include:
 
-- Variance Threshold
-- SelectKBest
-- Mutual Information
-- ANOVA F-Test
-- Recursive Feature Elimination (RFE)
-- Model-based Selection
+* Variance Threshold
+* SelectKBest
+* Mutual Information
+* ANOVA F-Test
+* Recursive Feature Elimination (RFE)
+* Model-based Selection
 
 Configured entirely through YAML.
 
@@ -303,10 +303,10 @@ Configured entirely through YAML.
 
 Optional dimensionality reduction methods include:
 
-- PCA
-- Kernel PCA
-- Truncated SVD
-- Fast ICA
+* PCA
+* Kernel PCA
+* Truncated SVD
+* Fast ICA
 
 Each experiment can choose a different technique.
 
@@ -318,13 +318,13 @@ Models are created through the `ModelFactory`.
 
 Supported models include:
 
-- Logistic Regression
-- Random Forest
-- XGBoost
-- AdaBoost
-- Support Vector Machine
-- Voting Classifier
-- Stacking Classifier
+* Logistic Regression
+* Random Forest
+* XGBoost
+* AdaBoost
+* Support Vector Machine
+* Voting Classifier
+* Stacking Classifier
 
 Each model has its own configuration file.
 
@@ -336,26 +336,26 @@ Optuna can be enabled per experiment.
 
 Workflow:
 
-```
-Pipeline
-      │
-      ▼
- Optuna Study
-      │
-      ▼
- Trial Parameters
-      │
-      ▼
- Pipeline Training
-      │
-      ▼
- Evaluation Metric
-      │
-      ▼
- Best Parameters
+```text
+     Pipeline
+          │
+          ▼
+     Optuna Study
+          │
+          ▼
+     Trial Parameters
+          │
+          ▼
+     Pipeline Training
+          │
+          ▼
+     Evaluation Metric
+          │
+          ▼
+     Best Parameters
 ```
 
-The final model is retrained using the best hyperparameters.
+> The final model is retrained using the best hyperparameters.The optuna functionality is not fully implemented yet, so it should not be used in any experiment until is fully implemented and confiured!
 
 ---
 
@@ -365,21 +365,21 @@ Every trained model is automatically evaluated.
 
 Available metrics include:
 
-- Accuracy
-- Balanced Accuracy
-- Precision
-- Recall
-- Macro F1
-- Weighted F1
+* Accuracy
+* Balanced Accuracy
+* Precision
+* Recall
+* Macro F1
+* Weighted F1
 
 Available visualizations:
 
-- Confusion Matrix
-- Normalized Confusion Matrix
-- ROC Curves (OvR)
-- Precision–Recall Curves
-- Probability Distribution
-- Classification Report
+* Confusion Matrix
+* Normalized Confusion Matrix
+* ROC Curves (OvR)
+* Precision–Recall Curves
+* Probability Distribution
+* Classification Report
 
 All evaluation artifacts are saved locally and logged to MLflow.
 
@@ -389,17 +389,16 @@ All evaluation artifacts are saved locally and logged to MLflow.
 
 The trained pipeline is serialized using Joblib.
 
-```
-models/
-    logistic_baseline.joblib
+```text
+     models/logistic_baseline.joblib
 ```
 
 The saved pipeline contains:
 
-- preprocessing
-- feature selection
-- dimensionality reduction
-- trained model
+* preprocessing
+* feature selection
+* dimensionality reduction
+* trained model
 
 allowing direct inference without rebuilding the pipeline.
 
@@ -411,29 +410,29 @@ Each experiment automatically logs:
 
 ### Parameters
 
-- dataset version
-- preprocessing configuration
-- feature selection
-- dimensionality reduction
-- model parameters
-- Optuna parameters
+* dataset version
+* preprocessing configuration
+* feature selection
+* dimensionality reduction
+* model parameters
+* Optuna parameters
 
 ### Metrics
 
-- Accuracy
-- Precision
-- Recall
-- F1
-- Balanced Accuracy
+* Accuracy
+* Precision
+* Recall
+* F1
+* Balanced Accuracy
 
 ### Artifacts
 
-- configuration files
-- evaluation plots
-- confusion matrices
-- ROC curves
-- prediction CSV
-- serialized model
+* configuration files
+* evaluation plots
+* confusion matrices
+* ROC curves
+* prediction CSV
+* serialized model
 
 Every experiment is completely reproducible.
 
@@ -443,7 +442,7 @@ Every experiment is completely reproducible.
 
 Predictions reuse the serialized pipeline.
 
-```
+```text
    Load Model
          │
          ▼
@@ -466,40 +465,40 @@ No manual preprocessing is required during inference.
 
 ---
 
-# Project Architecture
+## Project Architecture
 
-```
-Dataset Version (DVC)
-          │
-          ▼
-     DataLoader
-          │
-          ▼
-Sequential Split
-          │
-          ▼
- PipelineBuilder
-          │
-          ├──────── Preprocessing
-          ├──────── Feature Selection
-          ├──────── Dimensionality Reduction
-          └──────── Model
-                     │
-                     ▼
-              Training Pipeline
-                     │
-                     ▼
-              Optional Optuna
-                     │
-                     ▼
-               Final Training
-                     │
-                     ▼
-                Evaluation
-                     │
-          ┌──────────┴──────────┐
-          ▼                     ▼
-     Model (.joblib)       MLflow Logging
+```text
+     Dataset Version (DVC)
+               │
+               ▼
+          DataLoader
+               │
+               ▼
+     Sequential Split
+               │
+               ▼
+     PipelineBuilder
+               │
+               ├──────── Preprocessing
+               ├──────── Feature Selection
+               ├──────── Dimensionality Reduction
+               └──────── Model
+                         │
+                         ▼
+               Training Pipeline
+                         │
+                         ▼
+               Optional Optuna
+                         │
+                         ▼
+                    Final Training
+                         │
+                         ▼
+                    Evaluation
+                         │
+               ┌──────────┴──────────┐
+               ▼                     ▼
+          Model (.joblib)       MLflow Logging
 ```
 
 ---
@@ -530,6 +529,7 @@ The entire workflow — from data collection to analysis and modeling — can be
 ### 1.Clone the Repository
 
 Clone the project locally and move into the project directory.
+
 * git clone <https://github.com/kvenov/Football_Betting_Analysis.git>
 
 ### 2.Create a Virtual Environment

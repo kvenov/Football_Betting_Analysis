@@ -1,0 +1,258 @@
+data:
+  description: The baseline version of the data for the baseline experiment
+  features:
+  - h_title
+  - a_title
+  - home_formation
+  - away_formation
+  - home_elo
+  - away_elo
+  - elo_rating_diff
+  - home_form_last_3
+  - home_form_last_5
+  - away_form_last_3
+  - away_form_last_5
+  - odds_bet365_home
+  - odds_bet365_draw
+  - odds_bet365_away
+  - h_rolling_goals_5
+  - h_rolling_goals_against_5
+  - h_rolling_shots_5
+  - h_rolling_shots_against_5
+  - h_rolling_sot_5
+  - h_rolling_sot_against_5
+  - h_rolling_xG_5
+  - h_rolling_xGA_5
+  - h_rolling_poss_5
+  - h_rolling_poss_against_5
+  - h_rolling_big_chances_5
+  - h_rolling_avg_xG_per_shot_5
+  - h_rolling_shot_conversion_5
+  - h_rolling_open_play_xG_5
+  - h_rolling_set_piece_xG_5
+  - a_rolling_goals_5
+  - a_rolling_goals_against_5
+  - a_rolling_shots_5
+  - a_rolling_shots_against_5
+  - a_rolling_sot_5
+  - a_rolling_sot_against_5
+  - a_rolling_xG_5
+  - a_rolling_xGA_5
+  - a_rolling_poss_5
+  - a_rolling_poss_against_5
+  - a_rolling_big_chances_5
+  - a_rolling_avg_xG_per_shot_5
+  - a_rolling_shot_conversion_5
+  - a_rolling_open_play_xG_5
+  - a_rolling_set_piece_xG_5
+  - h_rolling_goal_diff_5
+  - h_rolling_poss_diff_5
+  - a_rolling_goal_diff_5
+  - a_rolling_poss_diff_5
+  format: parquet
+  input_path: data/processed/processed_final_dataset_v1.parquet
+  name: baseline_processed
+  path: data/processed/baseline_processed.parquet
+  revision: baseline
+  source: dvc
+  target: result_full
+dimensionality_reduction:
+  coef0: 1
+  degree: 3
+  eigen_solver: auto
+  enabled: true
+  fit_inverse_transform: false
+  gamma: 0.05
+  kernel: rbf
+  method: KernelPCA
+  n_components: 40
+  n_jobs: -1
+evaluation:
+  metrics:
+  - accuracy
+  - f1_macro
+  - precision_macro
+  - recall_macro
+  output_dir: reports/evaluation
+  plots:
+    classification_report: true
+    confusion_matrix: true
+    pr_curve: true
+    predictions_csv: true
+    roc_curve: true
+experiment:
+  data:
+    config: configs/data/baseline_processed.yaml
+  dimensionality_reduction:
+    config: configs/dimensionality_reduction/dimensionality_reduction_kernel_pca.yaml
+    enabled: true
+  evaluation:
+    config: configs/evaluation/classification.yaml
+  experiment_name: random_forest_baseline_v1
+  feature_selection:
+    enabled: false
+  logging: &id001
+    console: true
+    data_file: data.log
+    default_file: application.log
+    directory: logs
+    evaluate_file: evaluation.log
+    level: INFO
+    predict_file: prediction.log
+    train_file: training.log
+  mlflow: &id002
+    experiment_name: random_forest_baseline_v1
+  model:
+    config: configs/models/random_forest.yaml
+  optimization:
+    enabled: false
+  prediction: &id003
+    output_dir: predictions/
+  preprocessing:
+    config: configs/preprocessing/random_forest_default.yaml
+  serialization: &id004
+    output_dir: models/
+  split:
+    config: configs/splits/baseline_split.yaml
+feature_selection:
+  enabled: false
+global:
+  mlflow:
+    experiment_prefix: football_experiments
+    tracking_uri: http://localhost:5000
+  paths:
+    data_root: data/
+    logs_root: logs/
+    models_root: models/
+    reports_root: reports/
+  project_name: football_betting_analysis
+  random_seed: 42
+  target:
+    classes:
+    - H
+    - D
+    - A
+    column: result_full
+logging: *id001
+mlflow: *id002
+model:
+  params:
+    bootstrap: true
+    class_weight: balanced
+    criterion: gini
+    max_depth: 15
+    max_features: sqrt
+    min_samples_leaf: 2
+    min_samples_split: 5
+    n_estimators: 500
+    n_jobs: -1
+    random_state: 42
+  type: RandomForestClassifier
+optimization:
+  enabled: false
+prediction: *id003
+preprocessing:
+  feature_pipeline:
+    categorical_teams:
+      enabled: true
+      features:
+      - h_title
+      - a_title
+      - home_formation
+      - away_formation
+      imputer:
+        strategy: none
+      transformer:
+        encoding: target
+        params:
+          smooth: 10.0
+      type: categorical
+    form_features:
+      enabled: true
+      features:
+      - home_form_last_3
+      - home_form_last_5
+      - away_form_last_3
+      - away_form_last_5
+      imputer:
+        strategy: none
+      transformer:
+        scaler: standard
+      type: numeric
+    match_stats:
+      enabled: true
+      features:
+      - home_elo
+      - away_elo
+      - elo_rating_diff
+      imputer:
+        strategy: median
+      transformer:
+        scaler: standard
+      type: numeric
+    odds_features:
+      enabled: true
+      features:
+      - odds_bet365_home
+      - odds_bet365_draw
+      - odds_bet365_away
+      imputer:
+        strategy: none
+      transform:
+        type: log1p
+      transformer:
+        scaler: standard
+      type: numeric
+    rolling_differential_metrics:
+      enabled: true
+      features:
+      - h_rolling_goal_diff_5
+      - h_rolling_poss_diff_5
+      - a_rolling_goal_diff_5
+      - a_rolling_poss_diff_5
+      imputer:
+        strategy: median
+      transformer:
+        scaler: standard
+      type: numeric
+    rolling_performance_metrics:
+      enabled: true
+      features:
+      - h_rolling_goals_5
+      - h_rolling_goals_against_5
+      - h_rolling_shots_5
+      - h_rolling_shots_against_5
+      - h_rolling_sot_5
+      - h_rolling_sot_against_5
+      - h_rolling_xG_5
+      - h_rolling_xGA_5
+      - h_rolling_poss_5
+      - h_rolling_poss_against_5
+      - h_rolling_big_chances_5
+      - h_rolling_avg_xG_per_shot_5
+      - h_rolling_shot_conversion_5
+      - h_rolling_open_play_xG_5
+      - h_rolling_set_piece_xG_5
+      - a_rolling_goals_5
+      - a_rolling_goals_against_5
+      - a_rolling_shots_5
+      - a_rolling_shots_against_5
+      - a_rolling_sot_5
+      - a_rolling_sot_against_5
+      - a_rolling_xG_5
+      - a_rolling_xGA_5
+      - a_rolling_poss_5
+      - a_rolling_poss_against_5
+      - a_rolling_big_chances_5
+      - a_rolling_avg_xG_per_shot_5
+      - a_rolling_shot_conversion_5
+      - a_rolling_open_play_xG_5
+      - a_rolling_set_piece_xG_5
+      imputer:
+        strategy: median
+      transformer:
+        scaler: minmax
+      type: numeric
+serialization: *id004
+split:
+  test_size: 0.2
