@@ -1,0 +1,45 @@
+experiment_name: random_forest_baseline_v1
+
+logging:
+  level: INFO
+  directory: logs
+  data_file: data.log
+  train_file: training.log
+  predict_file: prediction.log
+  evaluate_file: evaluation.log
+  default_file: application.log
+  console: True
+
+mlflow:
+  experiment_name: random_forest_baseline_v1
+
+data:
+  config: configs/data/baseline_processed.yaml
+
+split:
+  config: configs/splits/baseline_split.yaml
+
+model:
+  config: configs/models/random_forest.yaml
+
+preprocessing:
+  config: configs/preprocessing/random_forest_default.yaml
+
+feature_selection:
+  enabled: False
+
+dimensionality_reduction:
+  enabled: True
+  config: configs/dimensionality_reduction/dimensionality_reduction_kernel_pca.yaml
+
+optimization:
+  enabled: False
+
+evaluation:
+  config: configs/evaluation/classification.yaml
+
+prediction:
+  output_dir: predictions/
+
+serialization:
+  output_dir: models/

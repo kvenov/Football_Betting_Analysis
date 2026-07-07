@@ -1,0 +1,11 @@
+dimensionality_reduction:
+  enabled: true
+  method: KernelPCA
+  n_components: 40
+  kernel: rbf
+  gamma: 0.05
+  degree: 3
+  coef0: 1
+  fit_inverse_transform: false
+  eigen_solver: auto
+  n_jobs: -1

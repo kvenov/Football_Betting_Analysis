@@ -22,7 +22,10 @@ dependencies = [
     "understatapi",
     "pyarrow",
     "rapidfuzz",
-    "seaborn"
+    "seaborn",
+    "sklearn",
+    "mlflow",
+    "optuna"
 ]
 
 

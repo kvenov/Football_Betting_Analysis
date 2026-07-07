@@ -1,5 +1,8 @@
 # CORE PROJECT CONFIGURATION
 
+# Target variable for predictions:
+TARGET = "result_full"
+
 # League configuration
 SOCCERDATA_LEAGUE = "ESP-La Liga"
 LEAGUE = "La_Liga"
